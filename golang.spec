@@ -96,10 +96,9 @@
 %endif
 
 %global go_api 1.19
-%global go_version 1.19.5
+%global go_version 1.19.4
 %global version %{go_version}
 %global pkg_release 1
-%global go_fips_version 1.19.4-1
 
 Name:           golang
 Version:        %{version}
@@ -115,7 +114,7 @@ Source0:        https://github.com/golang/go/archive/refs/tags/go%{version}.tar.
 # located at https://github.com/golang-fips/openssl-fips,
 # And pre-genetated patches to set up the module for a given
 # Go release are located at https://github.com/golang-fips/go.
-Source1:	https://github.com/golang-fips/go/archive/refs/tags/go%{go_fips_version}-openssl-fips.tar.gz
+Source1:	https://github.com/golang-fips/go/archive/refs/tags/go%{version}-%{pkg_release}-openssl-fips.tar.gz
 # make possible to override default traceback level at build time by setting build tag rpm_crashtraceback
 Source2:        fedora.go
 
@@ -153,6 +152,10 @@ Patch1939923:   skip_test_rhbz1939923.patch
 # are incompatible with dlopen in golang-fips
 Patch2: 	disable_static_tests_part1.patch
 Patch3: 	disable_static_tests_part2.patch
+
+# https://github.com/golang/go/issues/56834
+# https://github.com/golang/go/commit/1b4db7e46365bbbba479d0689c5699e6c0ba1142
+Patch4:		ppc64le-internal-linker-fix.patch
 
 # Having documentation separate was broken
 Obsoletes:      %{name}-docs < 1.1-4
@@ -246,11 +249,12 @@ Requires:       %{name} = %{version}-%{release}
 pushd ..
 tar -xf %{SOURCE1}
 popd
-patch -p1 < ../go-go%{go_fips_version}-openssl-fips/patches/000-initial-setup.patch
-patch -p1 < ../go-go%{go_fips_version}-openssl-fips/patches/001-initial-openssl-for-fips.patch
+patch -p1 < ../go-go%{version}-%{pkg_release}-openssl-fips/patches/000-initial-setup.patch
+patch -p1 < ../go-go%{version}-%{pkg_release}-openssl-fips/patches/001-initial-openssl-for-fips.patch
 
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %patch221 -p1
 
